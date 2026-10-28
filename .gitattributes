@@ -1,0 +1,6 @@
+# The scripts are run under WSL/Linux, so they must keep the LF endings the repository has.
+# Without this, a Windows Git install with core.autocrlf=true writes CRLF into them and
+# /bin/bash then reads the shebang as "#!/bin/bash\r" ("cannot execute: required file not found").
+xl     text eol=lf
+*.sh   text eol=lf
+*.py   text eol=lf
