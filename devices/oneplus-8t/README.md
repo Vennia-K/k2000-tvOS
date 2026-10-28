@@ -32,6 +32,26 @@ Everything the kernel, loader and user space need per phone is in `xnu/files/bsd
 Where the table says "read off", the number is not in this repository: pull the phone's device tree
 (`pull-soc.sh`, or `adb pull /sys/firmware/fdt`) and read the node.
 
+## What the phone reported (2026-10-28)
+
+Read over `adb` from a KB2000:
+
+```
+ro.product.device   OnePlus8T          ro.product.board    kona
+ro.product.model    KB2000             ro.soc.model        SM8250
+ro.build.fingerprint  OPPO/KB2000/OnePlus8T:17/CP2A.260605.016/B.1645cfc_fc7850_fb6677:user/release-keys
+ro.boot.flash.locked 1                ro.boot.verifiedbootstate  green
+ro.debuggable       0
+```
+
+Two gates, both still shut:
+
+- `ro.boot.flash.locked 1`: the bootloader is locked, so `fastboot boot` — the only way this system
+  starts, everything lives in RAM — cannot run at all. Unlocking is step 1 below, not a detail.
+- `ro.debuggable 0` on a user build: `adb pull /sys/firmware/fdt` and `ls /vendor/firmware` both come
+  back `Permission denied`, so `pull-soc.sh` and `pull-firmware.sh` need `su`, or the firmware has to
+  come out of a factory/OTA image instead of the phone.
+
 ## To fill in, in order
 
 1. Unlock the bootloader, enable `adb`, and confirm `fastboot boot` works with a stock `boot.img`.
