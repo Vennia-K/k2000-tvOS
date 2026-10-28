@@ -6,8 +6,16 @@ set -e
 cd "$(dirname "$(readlink -f "$0")")/.."
 # KERNEL=... to take the kernel from a tree built elsewhere (xnu/apply.sh makes one anywhere)
 K=${KERNEL:-xnu-src/xnu-8796.121.2/BUILD/obj/DEVELOPMENT_ARM64_BCM2837/mach.development.bcm2837}
+# DEVICE names the directory under devices/ (default poco-x5-pro), and its codename is the name
+# Mu-Silicium uses for the same phone (<codename>Pkg, Resources/DTBs/<codename>.dtb).
+DEVICE=${DEVICE:-poco-x5-pro}
+case $DEVICE in
+	poco-x5-pro) codename=redwood ;;
+	oneplus-8t)  codename=kebab ;;
+	*) echo "update-prebuilt.sh: unknown DEVICE=$DEVICE"; exit 1 ;;
+esac
 MU=Mu-Silicium
-mkdir -p prebuilt/userland devices/poco-x5-pro/prebuilt
+mkdir -p prebuilt/userland devices/$DEVICE/prebuilt
 cp $K prebuilt/mach.development.bcm2837
 [ -f xnuloader/loader.efi ] && cp xnuloader/loader.efi prebuilt/loader.efi || echo "update-prebuilt.sh: no xnuloader/loader.efi here (lld-link); prebuilt/loader.efi kept"
 cp userland/hello prebuilt/userland/
@@ -15,13 +23,13 @@ for f in init child stage0 hello_dyn svc_test surf_test rwtouch mg_test cpu_test
 	libhakios.media.dylib libhakios.app.dylib libhakios.tweaks.dylib HakiosAudio net_test; do
 	cp userland/obj/$f prebuilt/userland/
 done
-if [ -f $MU/Build/redwoodPkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd ]; then
-	cp $MU/Build/redwoodPkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd $MU/BootShim/BootShim.bin $MU/Resources/DTBs/redwood.dtb \
-		$MU/Resources/ramdisk $MU/Resources/Scripts/mkbootimg.py devices/poco-x5-pro/prebuilt/
+if [ -f $MU/Build/${codename}Pkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd ]; then
+	cp $MU/Build/${codename}Pkg/RELEASE_CLANGPDB/FV/SILICIUM_UEFI.fd $MU/BootShim/BootShim.bin $MU/Resources/DTBs/$codename.dtb \
+		$MU/Resources/ramdisk $MU/Resources/Scripts/mkbootimg.py devices/$DEVICE/prebuilt/
 fi
 {
 	echo "Built $(date '+%Y-%m-%d %H:%M') from this tree."
 	echo
-	sha256sum prebuilt/mach.development.bcm2837 prebuilt/loader.efi prebuilt/userland/* devices/poco-x5-pro/prebuilt/* 2>/dev/null
+	sha256sum prebuilt/mach.development.bcm2837 prebuilt/loader.efi prebuilt/userland/* devices/$DEVICE/prebuilt/* 2>/dev/null
 } > prebuilt/SHA256SUMS
-ls -la prebuilt prebuilt/userland devices/poco-x5-pro/prebuilt
+ls -la prebuilt prebuilt/userland devices/$DEVICE/prebuilt
