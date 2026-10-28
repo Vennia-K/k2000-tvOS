@@ -52,8 +52,9 @@ Where the table says "read off", the number is not in this repository: pull the 
    ```
 
 4. Build the UEFI (`uefi/README.md`), then replace `prebuilt/` with the results.
-5. Until `mkxnuimg.py` learns `DEVICE`, `xl` still reads the POCO's `prebuilt/`. Run with
-   `XL_ARGS`/`SOC_ARGS` pointed at this device's files until that is changed.
+5. `mkxnuimg.py` takes the device from `DEVICE` (default `poco-x5-pro`), so
+   `DEVICE=oneplus-8t ./xl enter` packs this directory's `prebuilt/`. Until that `prebuilt/` has the
+   five files it fails at the image step, which is the intended first failure.
 
 ## Milestones
 
